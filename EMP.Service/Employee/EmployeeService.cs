@@ -13,11 +13,11 @@ namespace EMP.Service
     public class EmployeeService : IEmployeeService
     {
         public EmployeeService()
-        {
-            string dbName = "EmpManagement.db";
-            if (File.Exists(dbName))
+        {  
+            using (var db = new EmpContext())
             {
-                File.Delete(dbName);
+                //Ensure database is created
+                db.Database.EnsureCreated();
             }
         }
         public void AddEmployee(EmployeeDto dto)
@@ -141,8 +141,6 @@ namespace EMP.Service
         {
             using (var db = new EmpContext())
             {
-                //Ensure database is created
-                db.Database.EnsureCreated();
                 return (from Employee emp in db.Employee
                         select new EmployeeDto()
                         {

@@ -33,6 +33,7 @@ namespace EMP.API
             services.AddSwaggerGen();
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<IEmployeeGroupService, EmployeeGroupService>();
+            services.AddTransient<IShipmentService, ShipmentService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -67,7 +68,7 @@ namespace EMP.API
                 endpoints.MapControllers();
             });
 
-           
+
         }
     }
 }

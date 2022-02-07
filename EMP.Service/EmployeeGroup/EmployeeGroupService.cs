@@ -12,13 +12,11 @@ namespace EMP.Service
     {
         public EmployeeGroupService()
         {
-            string dbName = "EmpManagement.db";
-            if (File.Exists(dbName))
+            using (var db = new EmpContext())
             {
-                File.Delete(dbName);
+                //Ensure database is created
+                db.Database.EnsureCreated();
             }
-            //Ensure database is created
-            //dbContext.Database.EnsureCreated();
         }
         public void AddEmployeeGroup(EmployeeGroupAddDto dto)
         {

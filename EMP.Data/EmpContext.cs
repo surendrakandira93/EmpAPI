@@ -8,27 +8,20 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace EMP.Data
 {
     public partial class EmpContext : DbContext
-    {
-        //public EmpContext()
-        //{
-        //}
-
-        //public EmpContext(DbContextOptions<EmpContext> options)
-        //    : base(options)
-        //{
-        //}
+    {       
 
         public virtual DbSet<EmpGroupList> EmpGroupList { get; set; }
         public virtual DbSet<Employee> Employee { get; set; }
         public virtual DbSet<EmployeeGroup> EmployeeGroup { get; set; }
         public virtual DbSet<EmployeeTechnology> EmployeeTechnology { get; set; }
+        public virtual DbSet<Shipment> Shipment { get; set; }
         public string DbPath { get; }
 
         public EmpContext()
         {
             var folder = Environment.SpecialFolder.LocalApplicationData;
             var path = Environment.GetFolderPath(folder);
-            DbPath = System.IO.Path.Join(path, "EmpManagement.db");
+            DbPath = System.IO.Path.Join(path, "EmpManagement1.db");
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -41,6 +34,20 @@ namespace EMP.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
+
+            modelBuilder.Entity<Shipment>(entity =>
+            {
+                entity.ToTable("Shipment");
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.EmpId).IsRequired();
+                entity.Property(e => e.Expiry).HasColumnType("datetime");
+                entity.Property(e => e.Password).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Password2).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Broker).IsRequired();
+                entity.Property(e => e.LoginId).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Modified).HasColumnType("datetime");
+                entity.Property(e => e.Created).HasColumnType("datetime");
+            });
 
             modelBuilder.Entity<EmpGroupList>(entity =>
             {
