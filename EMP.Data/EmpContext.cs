@@ -2,6 +2,7 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.Extensions.Configuration;
 
 #nullable disable
 
@@ -15,21 +16,28 @@ namespace EMP.Data
         public virtual DbSet<EmployeeGroup> EmployeeGroup { get; set; }
         public virtual DbSet<EmployeeTechnology> EmployeeTechnology { get; set; }
         public virtual DbSet<Shipment> Shipment { get; set; }
-        public string DbPath { get; }
+        
 
+        public EmpContext(DbContextOptions<EmpContext> options)
+            : base(options)
+        {
+
+        }
         public EmpContext()
         {
-            var folder = Environment.SpecialFolder.LocalApplicationData;
-            var path = Environment.GetFolderPath(folder);
-            DbPath = System.IO.Path.Join(path, "EmpManagement1.db");
+
         }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlite($"Data Source={DbPath}");
+            if (!optionsBuilder.IsConfigured)
+            {
+                optionsBuilder.UseSqlite($"Data Source={DBKeys.BaseDatabasePath}");
+            }
             base.OnConfiguring(optionsBuilder);
         }
-        //protected override void OnConfiguring(DbContextOptionsBuilder options)
-        //    => options.UseSqlite($"Data Source={DbPath}");
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

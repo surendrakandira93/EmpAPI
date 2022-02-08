@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EMP.API.Helpers;
+using EMP.Data;
 using EMP.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,7 +29,8 @@ namespace EMP.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
+            DBKeys.BaseDatabasePath = Configuration.GetConnectionString("BaseDatabasePath");
+            services.AddDbContext<EmpContext>(options => options.UseSqlite($"Data Source={Configuration.GetConnectionString("BaseDatabasePath")}"));
             services.AddControllers();
             //services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
