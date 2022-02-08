@@ -198,6 +198,13 @@ namespace EMP.API.Controllers
             return new ResponseDto<string>() { Message = "Employee deleted", IsSuccess = true };
         }
 
+        [HttpGet("{id}")]
+        public ResponseDto<string> ChangePassword(Guid id,string password)
+        {
+            service.ChangePassword(id, password);
+            return new ResponseDto<string>() { Message = "Password Changed", IsSuccess = true };
+        }
+
         private static int CalculateAge(DateTime dateOfBirth)
         {
             int age = 0;

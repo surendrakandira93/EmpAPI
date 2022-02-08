@@ -13,7 +13,7 @@ namespace EMP.Service
     public class EmployeeService : IEmployeeService
     {
         public EmployeeService()
-        {  
+        {
             using (var db = new EmpContext())
             {
                 //Ensure database is created
@@ -175,7 +175,8 @@ namespace EMP.Service
                             Id = emp.Id,
                             Gender = emp.Gender,
                             Name = emp.Name,
-                            Email = emp.Email
+                            Email = emp.Email,
+                            Password = emp.Password
                         }).FirstOrDefault();
             }
         }
@@ -352,6 +353,17 @@ namespace EMP.Service
             {
                 db.EmployeeTechnology.RemoveRange(db.EmployeeTechnology.Where(x => x.EmpId == id).ToList());
                 db.Employee.Remove(db.Employee.FirstOrDefault(x => x.Id == id));
+                db.SaveChanges();
+            }
+        }
+
+        public void ChangePassword(Guid id, string password)
+        {
+            using (var db = new EmpContext())
+            {
+                var emp = db.Employee.FirstOrDefault(x => x.Id == id);
+                emp.Password = password;
+                emp.Modified = DateTime.Now;
                 db.SaveChanges();
             }
         }

@@ -32,5 +32,7 @@ namespace EMP.Service
 
         EmployeeProfileDto GetEmployeeProfile(Guid id);
 
+        void ChangePassword(Guid id, string password);
+
     }
 }
