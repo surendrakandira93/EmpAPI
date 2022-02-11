@@ -1,4 +1,4 @@
-﻿namespace EMP.Data
+﻿namespace File.API.Dto
 {
     public static class DBKeys
     {
