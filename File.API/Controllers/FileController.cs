@@ -28,6 +28,14 @@ namespace File.API.Controllers
         }
 
         [HttpGet]
+        public ResponseDto<List<string>> GetAllKey()
+        {
+            var fileVal = service.GetAllKey();
+            return new ResponseDto<List<string>>() { Result = fileVal, IsSuccess = true };
+        }
+
+
+        [HttpGet]
         public ResponseDto<List<FileTableDto>> GetAll()
         {
             var fileVal = service.GetAllFile();

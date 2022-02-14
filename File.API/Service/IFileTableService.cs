@@ -15,5 +15,7 @@ namespace File.API.Service
         List<FileTableDto> GetAllFile();
 
         void RemoveFile(string key);
+
+        List<string> GetAllKey();
     }
 }

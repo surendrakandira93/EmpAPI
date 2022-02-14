@@ -59,6 +59,15 @@ namespace File.API.Service
             }
         }
 
+        public List<string> GetAllKey()
+        {
+            using (var db = new FileContext())
+            {
+                return db.FileTable.Select(x => x.Key).ToList();
+
+            }
+        }
+
         public void RemoveFile(string key)
         {
             using (var db = new FileContext())
