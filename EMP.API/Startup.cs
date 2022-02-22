@@ -37,6 +37,7 @@ namespace EMP.API
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<IEmployeeGroupService, EmployeeGroupService>();
             services.AddTransient<IShipmentService, ShipmentService>();
+            services.AddTransient<ISchemeProfitLossService, SchemeProfitLossService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

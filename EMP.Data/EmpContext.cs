@@ -11,7 +11,7 @@ namespace EMP.Data
         public virtual DbSet<EmployeeGroup> EmployeeGroup { get; set; }
         public virtual DbSet<EmployeeTechnology> EmployeeTechnology { get; set; }
         public virtual DbSet<Shipment> Shipment { get; set; }
-        
+        public virtual DbSet<SchemeProfitLoss> SchemeProfitLoss { get; set; }
 
         public EmpContext(DbContextOptions<EmpContext> options)
             : base(options)
@@ -32,8 +32,6 @@ namespace EMP.Data
             base.OnConfiguring(optionsBuilder);
         }
 
-
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.HasAnnotation("Relational:Collation", "SQL_Latin1_General_CP1_CI_AS");
@@ -48,6 +46,20 @@ namespace EMP.Data
                 entity.Property(e => e.Password2).IsRequired().HasMaxLength(256);
                 entity.Property(e => e.Broker).IsRequired();
                 entity.Property(e => e.LoginId).IsRequired().HasMaxLength(256);
+                entity.Property(e => e.Modified).HasColumnType("datetime");
+                entity.Property(e => e.Created).HasColumnType("datetime");
+            });
+
+            modelBuilder.Entity<SchemeProfitLoss>(entity =>
+            {
+                entity.ToTable("SchemeProfitLoss");
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.GroupId).IsRequired();
+                entity.Property(e => e.Date).HasColumnType("datetime");
+                entity.Property(e => e.ProfitLoss).IsRequired();
+                entity.Property(e => e.Expense).IsRequired();
+                entity.Property(e => e.IsNoTradeDay).IsRequired();
+                entity.Property(e => e.IsHoliday).IsRequired();
                 entity.Property(e => e.Modified).HasColumnType("datetime");
                 entity.Property(e => e.Created).HasColumnType("datetime");
             });
