@@ -68,6 +68,14 @@ namespace EMP.API.Controllers
             return new ResponseDto<string>() { Message = "Scheme ProfitLoss deleted", IsSuccess = true };
         }
 
+        [HttpDelete]
+        [Route("DeleteByGroupId/{id}")]
+        public ResponseDto<string> DeleteByGroupId(Guid id)
+        {
+            service.DeleteByGroupId(id);
+            return new ResponseDto<string>() { Message = "Scheme ProfitLoss deleted", IsSuccess = true };
+        }
+
         [HttpGet]
         [Route("IsExist")]
         public ResponseDto<bool> IsExist(Guid? id, Guid groupId, DateTime date)
@@ -86,26 +94,42 @@ namespace EMP.API.Controllers
 
         [HttpGet]
         [Route("Chart")]
-        public ResponseDto<List<GroupChartDto>> GetChartData(Guid groupId, int typeId)
+        public ResponseDto<List<GroupChartDto>> GetChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate)
         {
-            var employees = service.GetChartData(groupId, typeId);
+            var employees = service.GetChartData(groupId, typeId,fromDate,toDate);
             return new ResponseDto<List<GroupChartDto>>() { Result = employees, IsSuccess = true };
         }
 
         [HttpGet]
         [Route("ProfitLossChart")]
-        public ResponseDto<List<GroupChartDto>> GetProfitLossChartData(Guid groupId, int typeId)
+        public ResponseDto<List<GroupChartDto>> GetProfitLossChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate)
         {
-            var employees = service.GetProfitLossChartData(groupId, typeId);
+            var employees = service.GetProfitLossChartData(groupId, typeId,fromDate,toDate);
             return new ResponseDto<List<GroupChartDto>>() { Result = employees, IsSuccess = true };
         }
 
         [HttpGet]
         [Route("MonthlyBreaup")]
-        public ResponseDto<List<GroupMontlyBreakupDto>> GetMonthlyBreaupData(Guid groupId)
+        public ResponseDto<List<GroupMontlyBreakupDto>> GetMonthlyBreaupData(Guid groupId, DateTime? fromDate, DateTime? toDate)
         {
-            var employees = service.GetMonthlyBreaupData(groupId);
+            var employees = service.GetMonthlyBreaupData(groupId,fromDate,toDate);
             return new ResponseDto<List<GroupMontlyBreakupDto>>() { Result = employees, IsSuccess = true };
+        }
+
+        [HttpGet]
+        [Route("Cal_Heatmap")]
+        public ResponseDto<List<HeatmapResponseDto>> GetCal_HeatmapData(Guid groupId, DateTime fromDate, DateTime toDate)
+        {
+            var employees = service.GetCal_HeatmapData(groupId, fromDate, toDate);
+            return new ResponseDto<List<HeatmapResponseDto>>() { Result = employees, IsSuccess = true };
+        }
+
+        [HttpGet]
+        [Route("PLSummary")]
+        public ResponseDto<SchemeProfitLossSummary> PLSummary(Guid groupId, DateTime? fromDate, DateTime? toDate)
+        {
+            var employees = service.PLSummary(groupId, fromDate, toDate);
+            return new ResponseDto<SchemeProfitLossSummary>() { Result = employees, IsSuccess = true };
         }
     }
 }

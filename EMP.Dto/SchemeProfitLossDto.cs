@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace EMP.Dto
 {
-   public class SchemeProfitLossDto
+    public class SchemeProfitLossDto
     {
         public Guid? Id { get; set; }
         public Guid GroupId { get; set; }
@@ -18,4 +18,13 @@ namespace EMP.Dto
         public bool IsNoTradeDay { get; set; }
         public bool IsHoliday { get; set; }
     }
+
+    public class SchemeProfitLossSummary
+    {
+        public double RealisedPL { get; set; }
+        public double Charge { get; set; }
+        public double NetRealisedPL { get; set; }
+        public double UnRealisedPL { get; set; }
+
+    }   
 }

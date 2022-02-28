@@ -25,11 +25,17 @@ namespace EMP.Service
 
         List<string> GetKeywords();
 
-        List<GroupChartDto> GetChartData(Guid groupId, int typeId);
+        List<GroupChartDto> GetChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate);
 
-        List<GroupChartDto> GetProfitLossChartData(Guid groupId, int typeId);
+        List<GroupChartDto> GetProfitLossChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate);
 
-        List<GroupMontlyBreakupDto> GetMonthlyBreaupData(Guid groupId);
+        List<GroupMontlyBreakupDto> GetMonthlyBreaupData(Guid groupId, DateTime? fromDate, DateTime? toDate);
+
+        void DeleteByGroupId(Guid groupId);
+
+        List<HeatmapResponseDto> GetCal_HeatmapData(Guid groupId, DateTime fromDate, DateTime toDate);
+
+        SchemeProfitLossSummary PLSummary(Guid groupId, DateTime? fromDate, DateTime? toDate);
 
     }
 }

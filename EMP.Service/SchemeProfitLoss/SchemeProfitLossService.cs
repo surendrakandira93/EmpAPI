@@ -128,6 +128,19 @@ namespace EMP.Service
             }
         }
 
+        public void DeleteByGroupId(Guid groupId)
+        {
+            using (var db = new EmpContext())
+            {
+
+
+                var shipment = db.SchemeProfitLoss.Where(x => x.GroupId == groupId).ToList();
+                db.SchemeProfitLoss.RemoveRange(shipment);
+                db.SaveChanges();
+
+            }
+        }
+
         public bool IsExist(Guid? id, Guid groupId, DateTime date)
         {
             using (var db = new EmpContext())
@@ -152,15 +165,18 @@ namespace EMP.Service
             return keyResponse.Distinct().ToList();
         }
 
-        public List<GroupChartDto> GetChartData(Guid groupId, int typeId)
+        public List<GroupChartDto> GetChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate)
         {
             using (var db = new EmpContext())
             {
-                var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId).OrderBy(o => o.Date).Select(x => new GroupChartDto()
+                IQueryable<SchemeProfitLoss> queryable = db.SchemeProfitLoss.Where(x => x.GroupId == groupId
+                && (fromDate.HasValue && toDate.HasValue ? x.Date.Date >= fromDate.Value.Date && x.Date.Date <= toDate.Value.Date : true)
+                ).OrderBy(o => o.Date);
+                var response = queryable.Select(x => new GroupChartDto()
                 {
                     DailyPnL = x.ProfitLoss,
                     Date = x.Date,
-                    AggregateSum = x.Expense
+                    AggregateSum = queryable.Where(w => w.Date.Date <= x.Date.Date).Sum(s => s.ProfitLoss)
                 }).ToList();
 
                 if (typeId == 2)
@@ -170,7 +186,7 @@ namespace EMP.Service
                         Date = x.Key,
                         Day = x.Key.ToString("dd MMM"),
                         DailyPnL = x.Sum(s => s.DailyPnL),
-                        AggregateSum = x.Sum(s => s.AggregateSum)
+                        AggregateSum = queryable.Where(w => w.Date.Date <= x.Key.Date).Sum(s => s.ProfitLoss)
                     }).ToList();
                 }
                 else if (typeId == 3)
@@ -180,21 +196,23 @@ namespace EMP.Service
                         Date = x.Key,
                         Day = x.Key.ToString("MMM yyyy"),
                         DailyPnL = x.Sum(s => s.DailyPnL),
-                        AggregateSum = x.Sum(s => s.AggregateSum)
+                        AggregateSum = queryable.Where(w => w.Date.Date <= x.Key.Date).Sum(s => s.ProfitLoss)
                     }).ToList();
                 }
 
-                return response;
+                return response.Any() ? response.ToList() : new List<GroupChartDto>();
 
 
             }
         }
 
-        public List<GroupChartDto> GetProfitLossChartData(Guid groupId, int typeId)
+        public List<GroupChartDto> GetProfitLossChartData(Guid groupId, int typeId, DateTime? fromDate, DateTime? toDate)
         {
             using (var db = new EmpContext())
             {
-                var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId).OrderBy(o => o.Date).Select(x => new GroupChartDto()
+                var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId
+                && (fromDate.HasValue && toDate.HasValue ? x.Date.Date >= fromDate.Value.Date && x.Date.Date <= toDate.Value.Date : true)
+                ).OrderBy(o => o.Date).Select(x => new GroupChartDto()
                 {
                     Date = x.Date,
                     Day = x.Date.ToString("MMM dd,yyyy"),
@@ -220,18 +238,20 @@ namespace EMP.Service
                     }).ToList();
                 }
 
-                return response;
+                return response.Any() ? response.ToList() : new List<GroupChartDto>();
 
 
             }
         }
 
-        public List<GroupMontlyBreakupDto> GetMonthlyBreaupData(Guid groupId)
+        public List<GroupMontlyBreakupDto> GetMonthlyBreaupData(Guid groupId, DateTime? fromDate, DateTime? toDate)
         {
             List<GroupMontlyBreakupDto> result = new List<GroupMontlyBreakupDto>();
             using (var db = new EmpContext())
             {
-                var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId).OrderBy(o => o.Date).Select(x => new GroupChartDto()
+                var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId &&
+                (fromDate.HasValue && toDate.HasValue ? x.Date.Date >= fromDate.Value.Date && x.Date.Date <= toDate.Value.Date : true)
+                ).OrderBy(o => o.Date).Select(x => new GroupChartDto()
                 {
                     DailyPnL = x.ProfitLoss,
                     Date = x.Date,
@@ -245,35 +265,93 @@ namespace EMP.Service
                     DailyPnL = x.Sum(s => s.DailyPnL),
                     AggregateSum = x.Sum(s => s.AggregateSum)
                 }).ToList();
-
-                int miniYear = response.Min(m => m.Date.Year), maxYear = response.Max(m => m.Date.Year);
-                for (int i = miniYear; i <= maxYear; i++)
+                if (response != null && response.Any())
                 {
-                    GroupMontlyBreakupDto dto = new GroupMontlyBreakupDto()
+                    int miniYear = response.Min(m => m.Date.Year), maxYear = response.Max(m => m.Date.Year);
+                    for (int i = miniYear; i <= maxYear; i++)
                     {
-                        Year = i
-                    };
-                    for (int j = 1; j <= 12; j++)
-                    {
-                        var record = response.Where(x => x.Date.Month == j && x.Date.Year == i).FirstOrDefault();
-                        dto.Monthly.Add(record != null ? record : new GroupChartDto()
+                        GroupMontlyBreakupDto dto = new GroupMontlyBreakupDto()
                         {
-                            AggregateSum = 0,
-                            DailyPnL = 0,
-                            Date = new DateTime(i, j, 1),
-                            Day = ""
-                        });
-                    }
+                            Year = i
+                        };
+                        for (int j = 1; j <= 12; j++)
+                        {
+                            var record = response.Where(x => x.Date.Month == j && x.Date.Year == i).FirstOrDefault();
+                            dto.Monthly.Add(record != null ? record : new GroupChartDto()
+                            {
+                                AggregateSum = 0,
+                                DailyPnL = 0,
+                                Date = new DateTime(i, j, 1),
+                                Day = ""
+                            });
+                        }
 
-                    dto.Total = dto.Monthly.Sum(s => s.DailyPnL);
-                    result.Add(dto);
+                        dto.Total = dto.Monthly.Sum(s => s.DailyPnL);
+                        result.Add(dto);
+                    }
                 }
 
-
-                return result;
+                return result.Any() ? result.ToList() : new List<GroupMontlyBreakupDto>();
 
 
             }
+        }
+
+        public List<HeatmapResponseDto> GetCal_HeatmapData(Guid groupId, DateTime fromDate, DateTime toDate)
+        {
+            toDate = toDate.AddDays(10);
+            using (var db = new EmpContext())
+            {
+                List<SchemeProfitLoss> queryable = db.SchemeProfitLoss.Where(x => x.GroupId == groupId
+                && x.Date.Date >= fromDate.Date && x.Date.Date <= toDate.Date
+                ).OrderBy(o => o.Date).ToList();
+
+                List<HeatmapResponseDto> result = new List<HeatmapResponseDto>();
+                DateTime d = fromDate.Date;
+                while (d <= toDate.Date)
+                {
+                    if (queryable.Any(x => x.Date.Date == d))
+                    {
+                        result.Add(queryable.Where(x => x.Date.Date == d).Select(s => new HeatmapResponseDto()
+                        {
+                            Date = GetUnixTimestamp(s.Date.Date),
+                            Value = s.ProfitLoss
+                        }).FirstOrDefault());
+                    }
+
+                    d = d.AddDays(1);
+                }
+
+                return result.Any() ? result : new List<HeatmapResponseDto>();
+
+            }
+
+        }
+
+        public SchemeProfitLossSummary PLSummary(Guid groupId, DateTime? fromDate, DateTime? toDate)
+        {
+            
+            using (var db = new EmpContext())
+            {
+                List<SchemeProfitLoss> queryable = db.SchemeProfitLoss.Where(x => x.GroupId == groupId
+                && (fromDate.HasValue && toDate.HasValue ? x.Date.Date >= fromDate.Value.Date && x.Date.Date <= toDate.Value.Date : true)
+                ).OrderBy(o => o.Date).ToList();
+
+                double pl = queryable.Sum(a => a.ProfitLoss);
+                double ex = queryable.Sum(a => a.Expense);
+                double netPL = pl - ex;
+
+                return new SchemeProfitLossSummary()
+                {
+                    Charge = ex,
+                    RealisedPL = pl,
+                    NetRealisedPL = pl - ex,
+                    UnRealisedPL = 0
+
+                };
+
+            }
+
         }
 
         private DateTime GetWeekEndDate(DateTime time)
@@ -286,6 +364,12 @@ namespace EMP.Service
         {
             var datetime = ((new DateTime(time.Year, time.Month, 01)).AddMonths(1)).AddDays(-1);
             return datetime;
+        }
+
+        private int GetUnixTimestamp(DateTime date)
+        {
+            int unixTimestamp = (int)(date.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            return unixTimestamp;
         }
     }
 }
