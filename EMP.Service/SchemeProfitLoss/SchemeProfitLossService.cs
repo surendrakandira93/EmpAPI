@@ -249,6 +249,7 @@ namespace EMP.Service
             List<GroupMontlyBreakupDto> result = new List<GroupMontlyBreakupDto>();
             using (var db = new EmpContext())
             {
+                int miniYear = fromDate.HasValue ? fromDate.Value.Year : 0, maxYear = toDate.HasValue ? toDate.Value.Year : 0;
                 var response = db.SchemeProfitLoss.Where(x => x.GroupId == groupId &&
                 (fromDate.HasValue && toDate.HasValue ? x.Date.Date >= fromDate.Value.Date && x.Date.Date <= toDate.Value.Date : true)
                 ).OrderBy(o => o.Date).Select(x => new GroupChartDto()
@@ -267,7 +268,8 @@ namespace EMP.Service
                 }).ToList();
                 if (response != null && response.Any())
                 {
-                    int miniYear = response.Min(m => m.Date.Year), maxYear = response.Max(m => m.Date.Year);
+                    miniYear = (miniYear == 0 ? response.Min(m => m.Date.Year) : miniYear);
+                    maxYear = (maxYear==0?response.Max(m => m.Date.Year): maxYear);
                     for (int i = miniYear; i <= maxYear; i++)
                     {
                         GroupMontlyBreakupDto dto = new GroupMontlyBreakupDto()
@@ -278,6 +280,30 @@ namespace EMP.Service
                         {
                             var record = response.Where(x => x.Date.Month == j && x.Date.Year == i).FirstOrDefault();
                             dto.Monthly.Add(record != null ? record : new GroupChartDto()
+                            {
+                                AggregateSum = 0,
+                                DailyPnL = 0,
+                                Date = new DateTime(i, j, 1),
+                                Day = ""
+                            });
+                        }
+
+                        dto.Total = dto.Monthly.Sum(s => s.DailyPnL);
+                        result.Add(dto);
+                    }
+                }
+                else
+                {
+                    for (int i = miniYear; i <= maxYear; i++)
+                    {
+                        GroupMontlyBreakupDto dto = new GroupMontlyBreakupDto()
+                        {
+                            Year = i
+                        };
+                        for (int j = 1; j <= 12; j++)
+                        {
+                            
+                            dto.Monthly.Add(new GroupChartDto()
                             {
                                 AggregateSum = 0,
                                 DailyPnL = 0,
@@ -330,7 +356,7 @@ namespace EMP.Service
 
         public SchemeProfitLossSummary PLSummary(Guid groupId, DateTime? fromDate, DateTime? toDate)
         {
-            
+
             using (var db = new EmpContext())
             {
                 List<SchemeProfitLoss> queryable = db.SchemeProfitLoss.Where(x => x.GroupId == groupId
