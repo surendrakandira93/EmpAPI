@@ -41,8 +41,8 @@ namespace File.API.Controllers
         [HttpGet]
         public ResponseDto<List<string>> CreateFreshDBFile()
         {
-            string sourceFile = $"{this.Configuration.GetSection("DatabasePath")}\\FileStore-templete.db";
-            string destinationFile = $"{this.Configuration.GetSection("DatabasePath")}\\FileStore.db";
+            string sourceFile = $"{this.Configuration.GetSection("DatabasePath").Value}\\FileStore-templete.db";
+            string destinationFile = $"{this.Configuration.GetSection("DatabasePath").Value}\\FileStore.db";
             try
             {
                 (new FileInfo(destinationFile)).Delete();
