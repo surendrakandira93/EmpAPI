@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace File.API.Controllers
 {
@@ -15,9 +17,11 @@ namespace File.API.Controllers
     public class FileController : ControllerBase
     {
         private readonly IFileTableService service;
-        public FileController(IFileTableService _service)
+        private readonly IConfiguration Configuration;
+        public FileController(IFileTableService _service, IConfiguration _configuration)
         {
             this.service = _service;
+            this.Configuration = _configuration;
         }
 
         [HttpGet("{key}")]
@@ -32,6 +36,24 @@ namespace File.API.Controllers
         {
             var fileVal = service.GetAllKey();
             return new ResponseDto<List<string>>() { Result = fileVal, IsSuccess = true };
+        }
+
+        [HttpGet]
+        public ResponseDto<List<string>> CreateFreshDBFile()
+        {
+            string sourceFile = $"{this.Configuration.GetSection("DatabasePath")}\\FileStore-templete.db";
+            string destinationFile = $"{this.Configuration.GetSection("DatabasePath")}\\FileStore.db";
+            try
+            {
+                (new FileInfo(destinationFile)).Delete();
+                (new FileInfo(sourceFile)).CopyTo(destinationFile, true);
+                return new ResponseDto<List<string>>() { Message = "Created new db", IsSuccess = true };
+            }
+            catch
+            {
+                return new ResponseDto<List<string>>() { Message = "Not created new db", IsSuccess = true };
+            }
+
         }
 
 

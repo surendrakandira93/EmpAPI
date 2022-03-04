@@ -1,8 +1,10 @@
 ﻿using EMP.Dto;
 using EMP.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 
@@ -13,9 +15,11 @@ namespace EMP.API.Controllers
     public class EmployeeController : ControllerBase
     {
         private readonly IEmployeeService service;
-        public EmployeeController(IEmployeeService _service)
+        private readonly IConfiguration Configuration;
+        public EmployeeController(IEmployeeService _service, IConfiguration _configuration)
         {
             this.service = _service;
+            this.Configuration = _configuration;
         }
 
         [HttpGet]
@@ -25,6 +29,23 @@ namespace EMP.API.Controllers
             return new ResponseDto<EmployeeGridlDto>() { Result = employees, IsSuccess = true };
         }
 
+        [HttpGet]
+        public ResponseDto<List<string>> CreateFreshDBFile()
+        {
+            string sourceFile = $"{this.Configuration.GetSection("DatabasePath").Value}\\EmpManagement-templete.db";
+            string destinationFile = $"{this.Configuration.GetSection("DatabasePath").Value}\\EmpManagement.db";
+            try
+            {
+                (new FileInfo(destinationFile)).Delete();
+                (new FileInfo(sourceFile)).CopyTo(destinationFile, true);
+                return new ResponseDto<List<string>>() { Message = "Created new db", IsSuccess = true };
+            }
+            catch
+            {
+                return new ResponseDto<List<string>>() { Message = "Not created new db", IsSuccess = true };
+            }
+
+        }
 
         [HttpGet]
         public ResponseDto<List<EmployeeDto>> GetAll()
@@ -156,7 +177,7 @@ namespace EMP.API.Controllers
             if (!ModelState.IsValid)
             {
                 return new ResponseDto<string>() { Message = "Required filds missing", IsSuccess = false, Code = HttpStatusCode.BadRequest };
-            }          
+            }
 
             service.UpdateProfileImage(employee);
             return new ResponseDto<string>() { Message = "Profile Image updated", IsSuccess = true };
@@ -199,7 +220,7 @@ namespace EMP.API.Controllers
         }
 
         [HttpGet("{id}")]
-        public ResponseDto<string> ChangePassword(Guid id,string password)
+        public ResponseDto<string> ChangePassword(Guid id, string password)
         {
             service.ChangePassword(id, password);
             return new ResponseDto<string>() { Message = "Password Changed", IsSuccess = true };

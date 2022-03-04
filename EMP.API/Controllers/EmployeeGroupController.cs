@@ -60,10 +60,10 @@ namespace EMP.API.Controllers
             {
                 return new ResponseDto<string>() { Message = "Required filds missing", IsSuccess = false, Code = HttpStatusCode.BadRequest };
             }
-            if (employeeGroup.EmployeeIds == null || !employeeGroup.EmployeeIds.Any())
-            {
-                return new ResponseDto<string>() { Message = "Employee required", IsSuccess = false, Code = HttpStatusCode.BadRequest };
-            }
+            //if (employeeGroup.EmployeeIds == null || !employeeGroup.EmployeeIds.Any())
+            //{
+            //    return new ResponseDto<string>() { Message = "Employee required", IsSuccess = false, Code = HttpStatusCode.BadRequest };
+            //}
 
             service.AddEmployeeGroup(employeeGroup);
 
@@ -82,10 +82,10 @@ namespace EMP.API.Controllers
             {
                 return new ResponseDto<string>() { Message = "Required filds missing", IsSuccess = false, Code = HttpStatusCode.BadRequest };
             }
-            if (employeeGroup.EmployeeIds == null || !employeeGroup.EmployeeIds.Any())
-            {
-                return new ResponseDto<string>() { Message = "Employee required", IsSuccess = false, Code = HttpStatusCode.BadRequest };
-            }
+            //if (employeeGroup.EmployeeIds == null || !employeeGroup.EmployeeIds.Any())
+            //{
+            //    return new ResponseDto<string>() { Message = "Employee required", IsSuccess = false, Code = HttpStatusCode.BadRequest };
+            //}
 
 
             service.UpdateEmployeeGroup(employeeGroup);
