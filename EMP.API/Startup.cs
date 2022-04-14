@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using EMP.API.Helpers;
 using EMP.Data;
 using EMP.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -14,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 
 namespace EMP.API
 {
@@ -30,9 +32,26 @@ namespace EMP.API
         public void ConfigureServices(IServiceCollection services)
         {
             DBKeys.BaseDatabasePath = Configuration.GetConnectionString("BaseDatabasePath");
+            DBKeys.GoogleCredential = Configuration.GetConnectionString("GoogleCredential");
             services.AddDbContext<EmpContext>(options => options.UseSqlite($"Data Source={Configuration.GetConnectionString("BaseDatabasePath")}"));
             services.AddControllers();
-            //services.AddEndpointsApiExplorer();
+
+            services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = "https://securetoken.google.com/common-auth-core5";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = "https://securetoken.google.com/common-auth-core5",
+            ValidateAudience = true,
+            ValidAudience = "common-auth-core5",
+            ValidateLifetime = true
+        };
+    });
+
+
             services.AddSwaggerGen();
             services.AddTransient<IEmployeeService, EmployeeService>();
             services.AddTransient<IEmployeeGroupService, EmployeeGroupService>();
@@ -62,8 +81,9 @@ namespace EMP.API
 
             app.UseRouting();
 
+            //app.UseFirebaseAuthentication("https://securetoken.google.com/common-auth-core5", "common-auth-core5");
+            app.UseAuthentication();
             app.UseAuthorization();
-
             // global error handler
             app.UseMiddleware<ErrorHandlerMiddleware>();
 
